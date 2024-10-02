@@ -85,6 +85,7 @@ const styles = {
     width: '100vw',
     background: 'linear-gradient(135deg, #6B73FF 0%, #000DFF 100%)',
     padding: '20px',
+    overflowY: 'auto', // Allows scrolling for the entire pages
   },
   container: {
     backgroundColor: '#fff',
@@ -140,6 +141,8 @@ const styles = {
     marginTop: '30px',
     borderRadius: '8px',
     textAlign: 'left',
+    maxHeight: '300px', // Set max height for the summary box
+    overflowY: 'auto',  // Allows scrolling if the summary exceeds max height
   },
   summaryTitle: {
     fontSize: '1.5rem',
