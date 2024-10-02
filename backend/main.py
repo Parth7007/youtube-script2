@@ -18,6 +18,10 @@ async def get_summary(youtube_video_url: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+print("hello World")
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],  # URL where your React app is running
