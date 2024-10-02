@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-
+import Chatbot from './components/Chatbot';
+import './App.css';
 const App = () => {
   const [videoUrl, setVideoUrl] = useState('');
   const [summary, setSummary] = useState('');
@@ -72,7 +73,14 @@ const App = () => {
           </div>
         )}
       </div>
+
+      <div>
+        <Chatbot />
     </div>
+    </div>
+
+    
+    
   );
 };
 
@@ -154,6 +162,8 @@ const styles = {
     color: '#444',
     whiteSpace: 'pre-wrap', // ensures that line breaks and formatting are preserved
   },
+
+  
 };
 
 export default App;
