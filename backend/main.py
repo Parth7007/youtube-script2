@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from genai_model import YouTubeSummary
-
+from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 youtube_summarizer = YouTubeSummary()
 
@@ -16,3 +16,12 @@ async def get_summary(youtube_video_url: str):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # URL where your React app is running
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
