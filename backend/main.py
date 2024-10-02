@@ -31,3 +31,7 @@ async def summarize_video(request: VideoUrlRequest):
             raise HTTPException(status_code=404, detail="Transcript not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+
+print("hello World")
