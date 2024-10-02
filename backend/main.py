@@ -34,4 +34,3 @@ async def summarize_video(request: VideoUrlRequest):
 
 
 
-print("hello World")
