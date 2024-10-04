@@ -10,10 +10,12 @@ import re
 
 load_dotenv()
 
+app = FastAPI()
+
 class VideoQuestionRequest(BaseModel):
     url: Optional[str] = None
     question: Optional[str] = None
-    subject: Optional[str] = None
+    # subject: Optional[str] = None
     chat_history: Optional[List[dict]] = None  # Accepting chat history as a list of message dicts
 
 class VideoChatService:
@@ -39,6 +41,15 @@ class VideoChatService:
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
     
+    def extract_transcript(self, url):
+        try:
+            video_id = self.extract_youtube_key(url)
+            transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+            transcript = ' '.join([t['text'] for t in transcript_list])
+            return transcript
+        except (VideoUnavailable, NoTranscriptFound, TranscriptsDisabled) as e:
+            raise HTTPException(status_code=404, detail=f"Error fetching transcript: {str(e)}")
+
     def get_genai_response(self, chat_history, question, subject):
         try:
             system_prompt = self.default_system_prompt
@@ -70,29 +81,39 @@ class VideoChatService:
 
     async def chat_with_video(self, request: VideoQuestionRequest):
         try:
-            # If chat history is not provided, we need a URL to extract the transcript
+            # Check for the necessary attributes in the request
             if not request.chat_history and not request.url:
                 raise HTTPException(status_code=400, detail="Either chat history or video URL must be provided.")
 
-            # Extract the transcript only if URL is provided and chat history is empty
+            chat_history = []
+
+            # If chat history is not provided, we need to extract the transcript from the URL
             if request.url and not request.chat_history:
                 transcript = self.extract_transcript(request.url)
-                chat_history = [SystemMessage(content=self.default_system_prompt),
-                                HumanMessage(content=f"Transcript: {transcript}"),
-                                AIMessage(content=f"Hello👋🏻, How can I assist with this video?")]
+                chat_history.append(SystemMessage(content=self.default_system_prompt))
+                chat_history.append(HumanMessage(content=f"Transcript: {transcript}"))
+                chat_history.append(AIMessage(content="Hello👋🏻, How can I assist with this video?"))
                 return {"response": "Hello👋🏻, How can I assist with this video?", "chat_history": chat_history}
-            else:
-                # If chat history is provided, use it directly
-                chat_history = [SystemMessage(content=msg['content']) if msg['type'] == 'system' else
-                                HumanMessage(content=msg['content']) if msg['type'] == 'user' else
-                                AIMessage(content=msg['content']) for msg in request.chat_history]
+
+            # If chat history is provided, we need to reconstruct it properly
+            if request.chat_history:
+                for msg in request.chat_history:
+                    if 'type' in msg and 'content' in msg:
+                        if msg['type'] == 'user':
+                            chat_history.append(HumanMessage(content=msg['content']))
+                        elif msg['type'] == 'assistant':
+                            chat_history.append(AIMessage(content=msg['content']))
+                        elif msg['type'] == 'system':
+                            chat_history.append(SystemMessage(content=msg['content']))
+                    else:
+                        raise ValueError("Invalid message format in chat history.")
 
             # Get the GenAI response
             response, updated_chat_history = self.get_genai_response(chat_history, request.question, request.subject)
 
-            # Return both the response and the updated chat history
             return {"response": response, "chat_history": updated_chat_history}
         except HTTPException as e:
             raise e
         except Exception as e:
+            print(f"Error in chat_with_video: {str(e)}")  # Log the error for debugging
             raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

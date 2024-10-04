@@ -8,6 +8,8 @@ from youtube_transcript_api import YouTubeTranscriptApi
 
 load_dotenv()  # Load environment variables
 
+
+
 class YouTubeSummary:
     def __init__(self):
         self.api_key = os.getenv("GOOGLE_API_KEY")
