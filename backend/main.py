@@ -4,6 +4,11 @@ from genai_model import YouTubeSummary
 from fastapi.middleware.cors import CORSMiddleware
 from chatbot import VideoChatService
 from typing import List, Optional
+from deunny import YouTubeTranscriptConverter
+import os
+
+
+
 app = FastAPI()
 youtube_summarizer = YouTubeSummary()
 
@@ -40,12 +45,25 @@ async def summarize_video(request: VideoUrlRequest):
         raise HTTPException(status_code=500, detail=str(e))
     
 
+converter = YouTubeTranscriptConverter()
 
-# Initialize the video chat service
-video_chat_service = VideoChatService()
+class YouTubeRequest(BaseModel):
+    youtube_url: str = None
+    question: str 
+
+@app.post("/youtube/")
+def handle_youtube_request(request: YouTubeRequest):
+    url = request.youtube_url
+    question = request.question
 
 
-# FastAPI route to handle video chat requests
-@app.post("/video-chat/")
-async def video_chat(request: VideoQuestionRequest):
-    return await video_chat_service.chat_with_video(request)
+    # If a question is provided, get the response
+    if question:
+        try:
+            response = converter.get_response(question, url)
+            return {"answer": response}
+        except HTTPException as e:
+            return {"error": e.detail}
+    else:
+        return {"error": "Question is required."}
+    

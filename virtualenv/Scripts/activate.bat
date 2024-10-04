@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=D:\generative ai\youtube script\youtube-script2\virtualenv
+set VIRTUAL_ENV=D:\generative ai\youtube-script2\virtualenv
 
 if not defined PROMPT set PROMPT=$P$G
 
