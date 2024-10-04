@@ -45,25 +45,15 @@ async def summarize_video(request: VideoUrlRequest):
         raise HTTPException(status_code=500, detail=str(e))
     
 
-converter = YouTubeTranscriptConverter()
+transcript_converter = YouTubeTranscriptConverter()
 
 class YouTubeRequest(BaseModel):
     youtube_url: str = None
     question: str 
 
 @app.post("/youtube/")
-def handle_youtube_request(request: YouTubeRequest):
-    url = request.youtube_url
-    question = request.question
-
-
-    # If a question is provided, get the response
-    if question:
-        try:
-            response = converter.get_response(question, url)
-            return {"answer": response}
-        except HTTPException as e:
-            return {"error": e.detail}
-    else:
-        return {"error": "Question is required."}
-    
+def get_answer_and_transcript(request: YouTubeRequest):
+    """Fetches the transcript for the given YouTube video URL and answers the question."""
+    transcript = transcript_converter.extract_transcript(request.youtube_url)
+    answer = transcript_converter.ask_question(request.question, transcript)
+    return {"transcript": transcript, "answer": answer}

@@ -9,6 +9,9 @@ from youtube_transcript_api import YouTubeTranscriptApi, VideoUnavailable, NoTra
 from dotenv import load_dotenv
 import google.generativeai as genai
 
+# FastAPI application
+app = FastAPI()
+
 class YouTubeTranscriptConverter:
     def __init__(self):
         load_dotenv()
@@ -17,8 +20,12 @@ class YouTubeTranscriptConverter:
             genai.configure(api_key=api_key)
         else:
             raise Exception("API key not found. Please check your environment variables.")
-        self.embedding_model = 'models/embedding-001'
+        self.model = genai.GenerativeModel("gemini-pro")
         self.transcripts = {}  # In-memory storage for transcripts
+        self.chat = self.model.start_chat()
+        system_prompt = "You are a transcript expert. Based on the provided transcript, give the answer to the given prompt."
+        self.chat.send_message(system_prompt)
+        self.chat_history = [f'System: {system_prompt}']
 
     def extract_youtube_key(self, url):
         try:
@@ -43,39 +50,11 @@ class YouTubeTranscriptConverter:
             return transcript
         except (VideoUnavailable, NoTranscriptFound, TranscriptsDisabled) as e:
             raise HTTPException(status_code=404, detail=f"Error fetching transcript: {str(e)}")
-
-    def get_conversion_chain(self):
-        prompt_template = """
-        Answer the question as detailed as possible from the provided context. If the answer is not in the provided context, 
-        just say, "Answer is not available in the context," and do not provide a wrong answer.
-
-        Context:\n {context}?\n
-        Question:\n {question}\n
-
-        Answer:
-        """
-        
-        model = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0.3)
-        prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
-        chain = load_qa_chain(model, chain_type="stuff", prompt=prompt)
-
-        return chain
-
-    def get_response(self, user_question, url):
-        # Fetch the transcript for the provided URL
-        context = self.extract_transcript(url)  # Get the full transcript
-
-        chain = self.get_conversion_chain()
-
-        print(context, user_question)
-
-        try:
-            response = chain.invoke({
-                "context": context,  
-                "question": user_question,
-                "input_documents":  context
-            })
-        
-        except Exception as e:
-            print(f"Error occurred: {e}")
-            response = "An error occurred while processing your 
+    
+    def ask_question(self, prompt, transcript):
+        # Send the question and transcript to the generative AI model
+        response = self.chat.send_message(f"Transcript: {transcript}\nQuestion: {prompt}")
+        answer = response.text
+        self.chat_history.append(f'User: {prompt}')
+        self.chat_history.append(f'AI: {answer}')
+        return answer
