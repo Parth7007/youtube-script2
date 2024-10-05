@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from genai_model import YouTubeSummary
 from fastapi.middleware.cors import CORSMiddleware
-from chatbot import VideoChatService
+# from chatbot import VideoChatService
 from typing import List, Optional
 from deunny import YouTubeTranscriptConverter
 import os
@@ -51,9 +51,9 @@ class YouTubeRequest(BaseModel):
     youtube_url: str = None
     question: str 
 
-@app.post("/youtube/")
+@app.post("/api/chatbot/")
 def get_answer_and_transcript(request: YouTubeRequest):
     """Fetches the transcript for the given YouTube video URL and answers the question."""
     transcript = transcript_converter.extract_transcript(request.youtube_url)
     answer = transcript_converter.ask_question(request.question, transcript)
-    return {"transcript": transcript, "answer": answer}
+    return {"answer": answer}
