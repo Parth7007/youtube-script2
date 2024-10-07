@@ -178,6 +178,7 @@ const App = () => {
 
 
 const styles = {
+  
   pageWrapper: {
     display: 'flex',
     alignItems: 'center',
