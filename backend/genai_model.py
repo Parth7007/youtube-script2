@@ -14,8 +14,12 @@ class YouTubeSummary:
     def __init__(self):
         self.api_key = os.getenv("GOOGLE_API_KEY")
         genai.configure(api_key=self.api_key)
-        self.prompt = """You are a YouTube video summarizer. You will be taking the transcript text
-        and summarizing the entire video and providing the important summary in points. Please provide the summary of the text given here:  """
+        self.prompt = """You are a YouTube video summarizer. Your task is to take the transcript of a YouTube video and create a concise summary of its content for display on a web application. The summary should:
+        1. Be properly formatted and suitable for rendering on the web.
+        2. Present key points in bullet points.
+        3. If mathematical formulas are present in the video, format them in LaTeX.
+
+        Please summarize the following transcript text accordingly: """
 
 
     def extract_youtube_key(self, url):

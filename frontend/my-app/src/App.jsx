@@ -52,11 +52,11 @@ const App = () => {
 
   const formatSummary = (text) => {
     return text
-      .replace(/(\*\*Challenges:\*\*)/g, '\n\n**Challenges:**\n')
-      .replace(/(\*\*Final Challenge:\*\*)/g, '\n\n**Final Challenge:**\n')
-      .replace(/(\*\*Key Points:\*\*)/g, '\n\n**Key Points:**\n')
-      .replace(/\*(.*?)\*/g, '• $1\n')
-      .replace(/(\*\*(.*?)\*\*)/g, '$2');
+      .replace(/(\*\*Challenges:\*\*)/g, '\n\nChallenges:\n')
+      .replace(/(\*\*Final Challenge:\*\*)/g, '\n\nFinal Challenge:\n')
+      .replace(/(\*\*Key Points:\*\*)/g, '\n\nKey Points:\n')
+      .replace(/\*(.*?)\*/g, '$1\n')  // Removes asterisks but keeps the text
+      .replace(/(\*\*(.*?)\*\*)/g, '$2');  // Removes double asterisks for headings
   };
 
   // Chatbot toggle function
